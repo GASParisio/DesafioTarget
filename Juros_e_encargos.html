@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio 3: Cálculo de Juros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h2 { color: #333; }
+        
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; /* Garante que o padding não aumente a largura */
+        }
+
+        button#btn-calcular {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button#btn-calcular:hover { background-color: #0056b3; }
+
+        #resultado {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            display: none; /* Escondido até calcular */
+        }
+
+        .nav-buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: white;
+            flex: 1; /* Para ocuparem o mesmo tamanho */
+        }
+
+        .btn-inicio { background-color: #6c757d; } /* Cinza */
+        .btn-inicio:hover { background-color: #5a6268; }
+
+        .btn-estoque { background-color: #28a745; } /* Verde */
+        .btn-estoque:hover { background-color: #218838; }
+
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Cálculo de Juros Diários</h2>
+        <p>Multa de 2,5% ao dia por atraso.</p>
+
+        <div class="input-group">
+            <label for="valor">Valor Original (R$):</label>
+            <input type="number" id="valor" placeholder="Ex: 100.00" step="0.01">
+        </div>
+
+        <div class="input-group">
+            <label for="dataVencimento">Data de Vencimento:</label>
+            <input type="date" id="dataVencimento">
+        </div>
+
+        <button id="btn-calcular" onclick="calcularJuros()">Calcular Juros</button>
+
+        <div id="resultado">
+            </div>
+
+        <hr>
+
+        <div class="nav-buttons">
+            <a href="index.html" class="btn-nav btn-inicio">Voltar à Página Inicial</a>
+            <a href="estoque.html" class="btn-nav btn-estoque">Ir para Estoque</a>
+        </div>
+    </div>
+
+    <script>
+        function calcularJuros() {
+            // 1. Pegar os valores dos inputs
+            const valorInput = document.getElementById('valor').value;
+            const dataInput = document.getElementById('dataVencimento').value;
+            const divResultado = document.getElementById('resultado');
+
+            // Validação simples
+            if (!valorInput || !dataInput) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            const valorOriginal = parseFloat(valorInput);
+            const dataVencimento = new Date(dataInput);
+            const hoje = new Date();
+
+            // Zerar as horas para comparar apenas os dias (evitar bugs de fuso horário)
+            dataVencimento.setHours(0, 0, 0, 0);
+            hoje.setHours(0, 0, 0, 0);
+
+            // 2. Verificar se está atrasado
+            if (hoje <= dataVencimento) {
+                divResultado.style.display = "block";
+                divResultado.style.color = "green";
+                divResultado.innerHTML = `<strong>O boleto não está vencido.</strong><br>Valor a pagar: ${formatarMoeda(valorOriginal)}`;
+            } else {
+                // 3. Calcular dias de atraso
+                // Diferença em milissegundos convertida para dias
+                const diferencaTempo = Math.abs(hoje - dataVencimento);
+                const diasAtraso = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24));
+
+                // 4. Calcular multa (2.5% ao dia = 0.025)
+                const taxaDiaria = 0.025; 
+                const valorJuros = valorOriginal * (taxaDiaria * diasAtraso);
+                const valorTotal = valorOriginal + valorJuros;
+
+                // 5. Mostrar resultado
+                divResultado.style.display = "block";
+                divResultado.style.color = "#d9534f"; // Vermelho para alerta
+                divResultado.innerHTML = `
+                    <strong>Boleto Vencido!</strong><br>
+                    Dias de atraso: ${diasAtraso}<br>
+                    Juros acumulados: ${formatarMoeda(valorJuros)}<br>
+                    <hr>
+                    <strong>Total a pagar: ${formatarMoeda(valorTotal)}</strong>
+                `;
+            }
+        }
+
+        // Função auxiliar para formatar em Reais (R$)
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+    </script>
+
+</body>
+</html>
